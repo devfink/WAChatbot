@@ -59,7 +59,7 @@ Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leit
         message: replyText
       },
       {
-        headers: { Authorization: `Bearer ${process.env.WASENDER_API_KEY}` }
+        headers: {"x-api-key": process.env.WASENDER_API_KEY}
       }
     );
 
