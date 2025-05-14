@@ -1,20 +1,33 @@
-// whatsapp_bot_mvp/index.js import express from "express"; import axios from "axios"; import dotenv from "dotenv";
+// whatsapp_bot_mvp/index.js (CommonJS-Version) const express = require("express"); const axios = require("axios"); const dotenv = require("dotenv");
 
 dotenv.config();
 
 const app = express(); app.use(express.json());
 
-// Route für WhatsApp Webhook (WasenderAPI POST-Aufrufe) app.post("/webhook", async (req, res) => { const message = req.body?.message; const sender = req.body?.sender;
+// Route für WhatsApp Webhook (WasenderAPI POST-Aufrufe) app.post("/webhook", async (req, res) => { try { const message = req.body?.message; const sender = req.body?.sender;
 
-if (!message || !sender) { return res.status(400).send("Bad Request: Missing message or sender"); }
+if (!message || !sender) {
+  res.status(400).send("Bad Request: Missing message or sender");
+  return;
+}
 
-// Beispiel: Erkenne Terminanfragen const isAppointmentRequest = /termin|besuch|vereinbaren/i.test(message);
+const isAppointmentRequest = /termin|besuch|vereinbaren/i.test(message);
 
-// Prompt für Gemini vorbereiten const prompt = `Du bist der WhatsApp-Bot der Praxis health4women. Hier ist eine Patientenanfrage: "${message}".
+// Prompt für Gemini vorbereiten
+const prompt = `Du bist der WhatsApp-Bot der Praxis health4women. Hier ist eine Patientenanfrage: "${message}".
 
 Antwort klar, freundlich und auf Basis folgender Infos: – Öffnungszeiten: Mo–Do 9–13 Uhr, Di auch 15–18 Uhr – Adresse: Glacisstraße 61, 8010 Graz – Leistungen: Schwangerschaftsvorsorge, Verhütung, Hormonberatung, etc. Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leite weiter.`;
 
-try { const geminiResponse = await axios.post( "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent", { contents: [{ role: "user", parts: [{ text: prompt }] }] }, { params: { key: process.env.GEMINI_API_KEY }, headers: { "Content-Type": "application/json" } } );
+const geminiResponse = await axios.post(
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+  {
+    contents: [{ role: "user", parts: [{ text: prompt }] }]
+  },
+  {
+    params: { key: process.env.GEMINI_API_KEY },
+    headers: { "Content-Type": "application/json" }
+  }
+);
 
 const replyText = geminiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
   "Entschuldigung, ich konnte Ihre Anfrage gerade nicht verarbeiten.";
@@ -31,7 +44,6 @@ await axios.post(
   }
 );
 
-// Optional: Weiterleitung bei Terminanfrage
 if (isAppointmentRequest) {
   console.log(`Terminanfrage erkannt von ${sender}: ${message}`);
   // z.B. sendEmail(sender, message);
@@ -42,3 +54,4 @@ res.sendStatus(200);
 } catch (error) { console.error("Fehler bei Verarbeitung:", error?.response?.data || error.message); res.status(500).send("Interner Fehler bei Verarbeitung"); } });
 
 const PORT = process.env.PORT || 3000; app.listen(PORT, () => console.log(Bot läuft auf Port ${PORT}));
+
