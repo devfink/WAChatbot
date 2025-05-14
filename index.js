@@ -30,6 +30,9 @@ Antwort klar, freundlich und auf Basis folgender Infos:
 – Leistungen: Schwangerschaftsvorsorge, Verhütung, Hormonberatung, etc.
 Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leite weiter.`;
 
+    console.log("Prompt:", prompt);
+    console.log("Key:", process.env.GEMINI_API_KEY);
+    
     const geminiResponse = await axios.post(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
       {
