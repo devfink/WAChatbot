@@ -1,4 +1,4 @@
-// whatsapp_bot_mvp/index.js (CommonJS, fixed async)
+// whatsapp_bot_mvp/index.js (GPT-Version)
 const express = require("express");
 const axios = require("axios");
 const dotenv = require("dotenv");
@@ -21,7 +21,6 @@ app.post("/webhook", async (req, res) => {
 
     const isAppointmentRequest = /termin|besuch|vereinbaren/i.test(message);
 
-    // Prompt für Gemini vorbereiten
     const prompt = `Du bist der WhatsApp-Bot der Praxis health4women. Hier ist eine Patientenanfrage: "${message}".
 
 Antwort klar, freundlich und auf Basis folgender Infos:
@@ -30,21 +29,26 @@ Antwort klar, freundlich und auf Basis folgender Infos:
 – Leistungen: Schwangerschaftsvorsorge, Verhütung, Hormonberatung, etc.
 Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leite weiter.`;
 
-    console.log("Prompt:", prompt);
-    console.log("Key:", process.env.GEMINI_API_KEY);
-    
-    const geminiResponse = await axios.post(
-     "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
+    const openaiResponse = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
       {
-        contents: [{ role: "user", parts: [{ text: prompt }] }]
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
       },
       {
-        params: { key: process.env.GEMINI_API_KEY },
-        headers: { "Content-Type": "application/json" }
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json"
+        }
       }
     );
 
-    const replyText = geminiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+    const replyText = openaiResponse.data?.choices?.[0]?.message?.content ||
       "Entschuldigung, ich konnte Ihre Anfrage gerade nicht verarbeiten.";
 
     // Antwort zurück an WhatsApp-Nutzer senden
