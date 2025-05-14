@@ -70,9 +70,16 @@ Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leit
 
     res.sendStatus(200);
   } catch (error) {
-    console.error("Fehler bei Verarbeitung:", error?.response?.data || error.message);
-    res.status(500).send("Interner Fehler bei Verarbeitung");
-  }
+  console.error("Fehler bei Verarbeitung:", error?.response?.data || error.message);
+  
+  // Debugging: Welche API Keys wurden geladen?
+  console.log("OpenAI API Key:", process.env.OPENAI_API_KEY?.slice(0, 8));
+  console.log("Wasender API Key:", process.env.WASENDER_API_KEY?.slice(0, 8));
+  console.log("Wasender URL:", process.env.WASENDER_API_URL);
+
+  res.status(500).send("Interner Fehler bei Verarbeitung");
+}
+
 });
 
 const PORT = process.env.PORT || 3000;
