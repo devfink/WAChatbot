@@ -34,7 +34,7 @@ Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leit
     console.log("Key:", process.env.GEMINI_API_KEY);
     
     const geminiResponse = await axios.post(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+     "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
       {
         contents: [{ role: "user", parts: [{ text: prompt }] }]
       },
