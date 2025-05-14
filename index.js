@@ -1,4 +1,4 @@
-// whatsapp_bot_mvp/index.js (GPT-Version)
+// whatsapp_bot_mvp/index.js (GPT-Version mit stabilem Error-Handling)
 const express = require("express");
 const axios = require("axios");
 const dotenv = require("dotenv");
@@ -10,6 +10,8 @@ app.use(express.json());
 
 // Route für WhatsApp Webhook (WasenderAPI POST-Aufrufe)
 app.post("/webhook", async (req, res) => {
+  let replyText = "Entschuldigung, es gab ein Problem bei der Verarbeitung.";
+
   try {
     const message = req.body?.message;
     const sender = req.body?.sender;
@@ -29,23 +31,26 @@ Antwort klar, freundlich und auf Basis folgender Infos:
 – Leistungen: Schwangerschaftsvorsorge, Verhütung, Hormonberatung, etc.
 Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leite weiter.`;
 
-        await axios.post(
-          `${process.env.WASENDER_API_URL}/send-message`,
+    const openaiResponse = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-3.5-turbo",
+        messages: [
           {
-            number: sender,
-            message: replyText
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${process.env.WASENDER_API_KEY}`,
-              "Content-Type": "application/json"
-            }
+            role: "user",
+            content: prompt
           }
-        );
+        ]
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
 
-
-    const replyText = openaiResponse.data?.choices?.[0]?.message?.content ||
-      "Entschuldigung, ich konnte Ihre Anfrage gerade nicht verarbeiten.";
+    replyText = openaiResponse.data?.choices?.[0]?.message?.content || replyText;
 
     // Antwort zurück an WhatsApp-Nutzer senden
     await axios.post(
@@ -55,7 +60,10 @@ Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leit
         message: replyText
       },
       {
-        headers: {"x-api-key": process.env.WASENDER_API_KEY}
+        headers: {
+          Authorization: `Bearer ${process.env.WASENDER_API_KEY}`,
+          "Content-Type": "application/json"
+        }
       }
     );
 
@@ -66,16 +74,12 @@ Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leit
 
     res.sendStatus(200);
   } catch (error) {
-  console.error("Fehler bei Verarbeitung:", error?.response?.data || error.message);
-  
-  // Debugging: Welche API Keys wurden geladen?
-  console.log("OpenAI API Key:", process.env.OPENAI_API_KEY?.slice(0, 8));
-  console.log("Wasender API Key:", process.env.WASENDER_API_KEY?.slice(0, 8));
-  console.log("Wasender URL:", process.env.WASENDER_API_URL);
-
-  res.status(500).send("Interner Fehler bei Verarbeitung");
-}
-
+    console.error("Fehler bei Verarbeitung:", error?.response?.data || error.message);
+    console.log("OpenAI API Key:", process.env.OPENAI_API_KEY?.slice(0, 8));
+    console.log("Wasender API Key:", process.env.WASENDER_API_KEY?.slice(0, 8));
+    console.log("Wasender URL:", process.env.WASENDER_API_URL);
+    res.status(500).send(replyText);
+  }
 });
 
 const PORT = process.env.PORT || 3000;
