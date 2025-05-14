@@ -29,24 +29,20 @@ Antwort klar, freundlich und auf Basis folgender Infos:
 – Leistungen: Schwangerschaftsvorsorge, Verhütung, Hormonberatung, etc.
 Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leite weiter.`;
 
-    const openaiResponse = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-3.5-turbo",
-        messages: [
+        await axios.post(
+          `${process.env.WASENDER_API_URL}/send-message`,
           {
-            role: "user",
-            content: prompt
+            number: sender,
+            message: replyText
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.WASENDER_API_KEY}`,
+              "Content-Type": "application/json"
+            }
           }
-        ]
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
+        );
+
 
     const replyText = openaiResponse.data?.choices?.[0]?.message?.content ||
       "Entschuldigung, ich konnte Ihre Anfrage gerade nicht verarbeiten.";
