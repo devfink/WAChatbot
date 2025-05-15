@@ -1,4 +1,4 @@
-// whatsapp_bot_mvp/index.js (Gemini-Version mit TTL-Caching für Website)
+// whatsapp_bot_mvp/index.js (Gemini-Version mit Website-Caching und Datumsbezug)
 const express = require("express");
 const axios = require("axios");
 const dotenv = require("dotenv");
@@ -8,7 +8,6 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// Simple TTL-Cache für Website-Inhalte
 let cachedWebsiteText = null;
 let cacheTimestamp = 0;
 const CACHE_TTL_MINUTES = 60; // 1 Stunde gültig
@@ -65,12 +64,20 @@ app.post("/webhook", async (req, res) => {
     const isAppointmentRequest = /termin|besuch|vereinbaren/i.test(message);
     const siteText = await fetchWebsiteContent();
 
-    const prompt = `Du bist der WhatsApp-Bot der Praxis health4women. Hier ist eine Patientenanfrage: "${message}".
+    const today = new Date().toLocaleDateString("de-AT", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+
+    const prompt = `Du bist der WhatsApp-Bot der Praxis health4women. Heute ist ${today}.
+Hier ist eine Patientenanfrage: "${message}".
 
 Die folgenden Informationen stammen von der Website (automatisch geladen):
 ${siteText}
 
-Antworte klar, freundlich und auf Basis der Inhalte. Bei Terminanfragen bitte um Name + Wunschdatum.`;
+Antworte klar, freundlich und auf Basis der Inhalte. Wenn es um Öffnungszeiten geht, beziehe dich auf das aktuelle Datum. Bei Terminanfragen bitte um Name + Wunschdatum.`;
 
     const geminiResponse = await axios.post(
       "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro-002:generateContent",
