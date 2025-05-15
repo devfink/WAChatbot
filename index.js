@@ -13,8 +13,9 @@ app.post("/webhook", async (req, res) => {
   let replyText = "Entschuldigung, es gab ein Problem bei der Verarbeitung.";
 
   try {
-    const message = req.body?.messages?.[0]?.text;
-    const sender = req.body?.messages?.[0]?.from;
+    const message = req.body?.data?.messages?.message?.conversation;
+    const senderRaw = req.body?.data?.messages?.remoteJid;
+    const sender = senderRaw?.replace(/@s\.whatsapp\.net$/, "");
 
     console.log("Webhook-Payload:", JSON.stringify(req.body, null, 2));
     console.log("Nachricht:", message);
