@@ -13,8 +13,12 @@ app.post("/webhook", async (req, res) => {
   let replyText = "Entschuldigung, es gab ein Problem bei der Verarbeitung.";
 
   try {
-    const message = req.body?.message;
-    const sender = req.body?.sender;
+    const message = req.body?.messages?.[0]?.text;
+    const sender = req.body?.messages?.[0]?.from;
+
+    console.log("Webhook-Payload:", JSON.stringify(req.body, null, 2));
+    console.log("Nachricht:", message);
+    console.log("Absender:", sender);
 
     if (!message || !sender) {
       res.status(400).send("Bad Request: Missing message or sender");
