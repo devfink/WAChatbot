@@ -73,7 +73,7 @@ ${siteText}
 Antworte klar, freundlich und auf Basis der Inhalte. Bei Terminanfragen bitte um Name + Wunschdatum.`;
 
     const geminiResponse = await axios.post(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+      "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent",
       {
         contents: [
           {
