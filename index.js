@@ -53,11 +53,11 @@ Wenn es sich um eine Terminanfrage handelt, bitte um Name + Wunschdatum und leit
     replyText = openaiResponse.data?.choices?.[0]?.message?.content || replyText;
 
     // Antwort zurück an WhatsApp-Nutzer senden
-    await axios.post(
+   await axios.post(
       `${process.env.WASENDER_API_URL}/send-message`,
       {
-        number: sender,
-        message: replyText
+        to: sender,
+        text: replyText
       },
       {
         headers: {
